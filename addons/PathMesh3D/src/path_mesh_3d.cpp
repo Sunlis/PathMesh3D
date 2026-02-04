@@ -434,6 +434,11 @@ void PathMesh3D::_rebuild_mesh() {
         return;
     }
 
+    if (source_mesh->get_surface_count() != surfaces.size()) {
+        UtilityFunctions::push_error("PathMesh3D: Surface count mismatch. Expected ", surfaces.size(), " but got ", source_mesh->get_surface_count());
+        return;
+    }
+
     Transform3D mod_transform = _get_relative_transform();
 
     Ref<Curve3D> curve = path3d->get_curve();
@@ -445,6 +450,10 @@ void PathMesh3D::_rebuild_mesh() {
     double mesh_l = _get_mesh_length();
     ERR_FAIL_COND_MSG(mesh_l == 0.0, "Provided mesh has no length in Z dimension.  Try rotating on X or Y to gain length.");
     ERR_FAIL_COND_MSG(baked_l < mesh_l, "Curve length < mesh length, cannot tile.");
+
+    ERR_FAIL_COND_EDMSG(source_mesh->get_surface_count() != surfaces.size(),
+                        "The number of surfaces in the source mesh does not "
+                        "match the number of configured surfaces.");
     
     for (uint64_t idx_surf = 0; idx_surf < source_mesh->get_surface_count(); ++idx_surf) {
         SurfaceData &surf = surfaces[idx_surf];
@@ -674,6 +683,10 @@ double PathMesh3D::_get_mesh_length() const {
         double min_z = 0;
         double max_z = 0;
         real_t mesh_length_offset = 0.0;
+        ERR_FAIL_COND_V_EDMSG(source_mesh->get_surface_count() != surfaces.size(),
+                          0.0,
+                          "The number of surfaces in the source mesh does not "
+                          "match the number of configured surfaces.");
         for (uint64_t idx_surf = 0; idx_surf < source_mesh->get_surface_count(); ++idx_surf) {
             SurfaceData surf = surfaces[idx_surf];
 
